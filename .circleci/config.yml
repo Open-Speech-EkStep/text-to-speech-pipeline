@@ -1,0 +1,126 @@
+version: 2.1
+
+parameters:
+  # This parameter is used to trigger the main workflow
+  trigger:
+    type: boolean
+    default: false
+
+  # A parameter per package
+  preprocess:
+    type: boolean
+    default: true
+  api:
+    type: boolean
+    default: true
+  augmentation:
+    type: boolean
+    default: true
+
+
+executors:
+  node:
+    docker:
+      - image: circleci/node
+
+jobs:
+  trigger-workflows:
+    executor: node
+    steps:
+      - checkout
+      - run:
+          name: Trigger workflows
+          command: chmod +x .circleci/circle_trigger.sh && .circleci/circle_trigger.sh
+
+  build:
+    parameters:
+      package_name:
+        type: string
+
+    executor: node
+    working_directory: ~/project/packages/<< parameters.package_name >>
+
+    steps:
+      - checkout:
+          path: ~/project
+      # This step is added only to show that we are in the package directory
+      - run:
+          name: Content
+          command: |
+            cat README.md
+            echo "<< parameters.package_name >> built." > build.txt
+      - run:
+          name: Build
+          command: echo "Build << parameters.package_name >> ..."
+      - persist_to_workspace:
+          root: ~/project
+          paths:
+            - packages/<< parameters.package_name >>
+
+  deploy:
+    parameters:
+      package_name:
+        type: string
+
+    executor: node
+    working_directory: ~/project/packages/<< parameters.package_name >>
+
+    steps:
+      - attach_workspace:
+          at: ~/project
+      # This step is added to show that files are available from the build job.
+      - run:
+          name: Content to deploy
+          command: ls && cat build.txt
+      - deploy:
+          name: Deploy
+          command: echo "Deploying << parameters.package_name >> ..."
+
+workflows:
+  version: 2
+
+  # The main workflow responsible for triggering all other workflows
+  # in which changes are detected.
+  ci:
+    when: << pipeline.parameters.trigger >>
+    jobs:
+      - trigger-workflows
+
+
+  # Workflows defined for each package.
+  preprocess:
+    when: << pipeline.parameters.preprocess >>
+    jobs:
+      - build:
+          name: preprocess-build
+          package_name: preprocess
+      - deploy:
+          name: preprocess-deploy
+          package_name: preprocess
+          requires:
+            - preprocess-build
+
+  api:
+    when: << pipeline.parameters.api >>
+    jobs:
+      - build:
+          name: api-build
+          package_name: api
+      - deploy:
+          name: api-deploy
+          package_name: api
+          requires:
+            - api-build
+
+  augmentation:
+    when: << pipeline.parameters.augmentation >>
+    jobs:
+      - build:
+          name: augmentation-build
+          package_name: augmentation
+      - deploy:
+          name: augmentation-deploy
+          package_name: augmentation
+          requires:
+            - augmentation-build
+
