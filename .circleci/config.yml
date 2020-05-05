@@ -4,24 +4,24 @@ parameters:
   # This parameter is used to trigger the main workflow
   trigger:
     type: boolean
-    default: false
+    default: true
 
   # A parameter per package
   preprocess:
     type: boolean
-    default: true
+    default: false
   api:
     type: boolean
-    default: true
+    default: false
   augmentation:
     type: boolean
-    default: true
+    default: false
 
 
 executors:
   node:
     docker:
-      - image: circleci/node
+      - image: circleci/python:3.7-node-browsers-legacy
 
 jobs:
   trigger-workflows:
@@ -37,7 +37,9 @@ jobs:
       package_name:
         type: string
 
-    executor: node
+#    executor: node
+    machine:
+      image: ubuntu-1604:201903-01
     working_directory: ~/project/packages/<< parameters.package_name >>
 
     steps:
@@ -45,13 +47,22 @@ jobs:
           path: ~/project
       # This step is added only to show that we are in the package directory
       - run:
-          name: Content
-          command: |
-            cat README.md
-            echo "<< parameters.package_name >> built." > build.txt
+          name: Sanity check to confirm correct package directory
+          command: echo "Current package directory is << parameters.package_name >> ..."
       - run:
-          name: Build
-          command: echo "Build << parameters.package_name >> ..."
+          name: Setup Testing Environment
+          command: |
+            sudo pip install --upgrade pip
+            sudo pip install -r requirements.txt
+            python --version ; pip --version ; pwd ; ls
+#      - run:
+#          name: Run Tests
+#          command: |
+#            coverage run -m pytest
+#            coverage report
+#            coverage html  # open htmlcov/index.html in a browser
+#      - store_artifacts:
+#          path: htmlcov
       - persist_to_workspace:
           root: ~/project
           paths:
@@ -61,8 +72,12 @@ jobs:
     parameters:
       package_name:
         type: string
+      package_version:
+        type: string
 
-    executor: node
+#    executor: node
+    machine:
+      image: ubuntu-1604:201903-01
     working_directory: ~/project/packages/<< parameters.package_name >>
 
     steps:
@@ -71,10 +86,19 @@ jobs:
       # This step is added to show that files are available from the build job.
       - run:
           name: Content to deploy
-          command: ls && cat build.txt
+          command: ls
       - deploy:
-          name: Deploy
-          command: echo "Deploying << parameters.package_name >> ..."
+          name: Build and Deploy Image
+          command: |
+            echo "Build << parameters.package_name >> ..."
+            docker build --rm=false -t us.gcr.io/${GCP_PROJECT}/<< parameters.package_name >>:<< parameters.package_version >> .
+            echo ${GOOGLE_AUTH} > ${HOME}/gcp-key.json
+            gcloud auth activate-service-account --key-file ${HOME}/gcp-key.json
+            gcloud --quiet config set project ${GCP_PROJECT}
+            gcloud docker -- push us.gcr.io/${GCP_PROJECT}/<< parameters.package_name >>:<< parameters.package_version >>
+      - run:
+          name: Remove account details
+          command: rm ${HOME}/gcp-key.json ; ls
 
 workflows:
   version: 2
@@ -94,11 +118,16 @@ workflows:
       - build:
           name: preprocess-build
           package_name: preprocess
+          package_version: 1.0.0
       - deploy:
           name: preprocess-deploy
           package_name: preprocess
           requires:
             - preprocess-build
+          filters:
+            branches:
+              only:
+                - dev
 
   api:
     when: << pipeline.parameters.api >>
@@ -106,11 +135,16 @@ workflows:
       - build:
           name: api-build
           package_name: api
+          package_version: 1.0.0
       - deploy:
           name: api-deploy
           package_name: api
           requires:
             - api-build
+          filters:
+            branches:
+              only:
+                - dev
 
   augmentation:
     when: << pipeline.parameters.augmentation >>
@@ -118,9 +152,14 @@ workflows:
       - build:
           name: augmentation-build
           package_name: augmentation
+          package_version: 1.0.0
       - deploy:
           name: augmentation-deploy
           package_name: augmentation
           requires:
             - augmentation-build
+          filters:
+            branches:
+              only:
+                - dev
 
