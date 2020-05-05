@@ -118,10 +118,10 @@ workflows:
       - build:
           name: preprocess-build
           package_name: preprocess
-          package_version: 1.0.0
       - deploy:
           name: preprocess-deploy
           package_name: preprocess
+          package_version: 1.0.0
           requires:
             - preprocess-build
           filters:
@@ -135,10 +135,10 @@ workflows:
       - build:
           name: api-build
           package_name: api
-          package_version: 1.0.0
       - deploy:
           name: api-deploy
           package_name: api
+          package_version: 1.0.0
           requires:
             - api-build
           filters:
@@ -152,10 +152,10 @@ workflows:
       - build:
           name: augmentation-build
           package_name: augmentation
-          package_version: 1.0.0
       - deploy:
           name: augmentation-deploy
           package_name: augmentation
+          package_version: 1.0.0
           requires:
             - augmentation-build
           filters:
