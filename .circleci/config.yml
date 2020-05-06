@@ -91,14 +91,14 @@ jobs:
           name: Build and Deploy Image
           command: |
             echo "Build << parameters.package_name >> ..."
-            docker build --rm=false -t us.gcr.io/${GCP_PROJECT}/<< parameters.package_name >>:<< parameters.package_version >> .
-            echo ${GOOGLE_AUTH} > ${HOME}/gcp-key.json
-            gcloud auth activate-service-account --key-file ${HOME}/gcp-key.json
-            gcloud --quiet config set project ${GCP_PROJECT}
-            gcloud docker -- push us.gcr.io/${GCP_PROJECT}/<< parameters.package_name >>:<< parameters.package_version >>
-      - run:
-          name: Remove account details
-          command: rm ${HOME}/gcp-key.json ; ls
+#            docker build --rm=false -t us.gcr.io/${GCP_PROJECT}/<< parameters.package_name >>:<< parameters.package_version >> .
+#            echo ${GOOGLE_AUTH} > ${HOME}/gcp-key.json
+#            gcloud auth activate-service-account --key-file ${HOME}/gcp-key.json
+#            gcloud --quiet config set project ${GCP_PROJECT}
+#            gcloud docker -- push us.gcr.io/${GCP_PROJECT}/<< parameters.package_name >>:<< parameters.package_version >>
+#      - run:
+#          name: Remove account details
+#          command: rm ${HOME}/gcp-key.json ; ls
 
 workflows:
   version: 2
