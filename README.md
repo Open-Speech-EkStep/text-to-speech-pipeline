@@ -9,7 +9,7 @@ Some guidelines to follow:
 __Clone:__
 
     
-    git clone --single-branch --branch dev-tts https://github.com/Open-Speech-EkStep/text-to-speech-pipeline.git
+    git clone --single-branch --branch feature/dev-tts https://github.com/Open-Speech-EkStep/text-to-speech-pipeline.git
     
     
 
@@ -23,7 +23,7 @@ __Push:__
 
     git commit - m "Message"
 
-    git push origin dev-tts
+    git push origin feature/dev-tts
     
 
 __Pull:__
