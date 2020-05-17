@@ -1,4 +1,5 @@
-indic-nlp-library
+indicnlp==0.0.1
+indic-nlp-library==0.6
 pandas
 numpy
 coverage
