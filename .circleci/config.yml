@@ -9,7 +9,7 @@ parameters:
   # A parameter per package
   preprocess:
     type: boolean
-    default: true
+    default: false
   api:
     type: boolean
     default: false
@@ -126,10 +126,10 @@ workflows:
           package_version: 1.0.0
           requires:
             - preprocess-build
-#          filters:
-#            branches:
-#              only:
-#                - dev
+          filters:
+            branches:
+              only:
+                - dev
 
   api:
     when: << pipeline.parameters.api >>
