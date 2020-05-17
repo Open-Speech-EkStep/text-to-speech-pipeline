@@ -1,0 +1,44 @@
+---
+application:
+  verbose: 0
+  logging: 0
+
+loader: ## data loader
+  raw_tobeprocessed_path: 'data/texttospeech/raw/curation/tobeprocessed/hindi'                 # [*required]
+  file_type: 'dir'        # possible values (txt, csv, dir)
+  exclude_extn: 'rtf'     # any file extn type to be excluded for processing
+  delimiter: '\n'         # delimiter on which split will be made 
+  column_name: 'article'       # column_name to read in case of csv
+  header: null            # specify line containing the header
+  nrows: null
+
+normalizer:               ## normalize input data
+  enabled: True
+
+tokenizer:                ## tokenize bulk of corpus into individual sentences
+  enabled: True
+
+cleaner:                  ## clean the input data for punctuations and converting numerals
+  enabled: True
+  remove_special_character: True    # whether to remove special characters or not
+  replace_digits: True              # whether to convert digits from one language to another
+  digit_language: 'en'              # specify the language of digits (valid only if replace_digits is True,
+                                    # if null will be of the default language, 'hi' for hindi, 'en' for english)
+  remove_foreign_language_occurences: False    # remove foreign words from sentences
+  remove_foreign_language_lines: True        # whether you want to remove the lines containing even a single foreign word
+  remove_extra_whitespace: True               # remove extra whitespaces within words
+
+  filter_line_by_length_mode: 'min-max'    # whether you want to clip sentences (3 modes: min, max, min-max)
+  min_length_threshold: 2            # minimum length of the sentence. To be specified only when mode is min or min-max
+  max_length_threshold: 99999999      # maximum length of the sentence. To be specified only when mode is max or min-max
+
+saver:   ## save processed lines and check for duplicacy
+  enabled: True
+  directory_for_duplication_check: null    # [*required]
+  delimiter_text_file: '\n'
+  file_type_for_saving: 'txt'
+  target_directory_for_saving: 'data/texttospeech/integration/curation/processed/hindi'
+  file_name_for_saving: 'f_transcript'
+  one_sentence_per_file: True
+  check_for_duplicacy: False
+  raw_processed_path: 'data/texttospeech/raw/curation/processed/hindi'

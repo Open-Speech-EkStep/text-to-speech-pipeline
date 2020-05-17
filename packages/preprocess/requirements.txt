@@ -1,3 +1,5 @@
+indic-nlp-library
+pandas
+numpy
 coverage
 flake8
-pytest

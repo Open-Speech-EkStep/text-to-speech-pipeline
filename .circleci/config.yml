@@ -55,14 +55,15 @@ jobs:
             sudo pip install --upgrade pip
             sudo pip install -r requirements.txt
             python --version ; pip --version ; pwd ; ls
-#      - run:
-#          name: Run Tests
-#          command: |
-#            coverage run -m pytest
-#            coverage report
-#            coverage html  # open htmlcov/index.html in a browser
-#      - store_artifacts:
-#          path: htmlcov
+      - run:
+          name: Run Tests
+          command: |
+            cd src/tests
+            coverage run -m unittest
+            coverage report
+            coverage html  # open htmlcov/index.html in a browser
+      - store_artifacts:
+          path: htmlcov
       - persist_to_workspace:
           root: ~/project
           paths:
@@ -91,14 +92,14 @@ jobs:
           name: Build and Deploy Image
           command: |
             echo "Build << parameters.package_name >> ..."
-#            docker build --rm=false -t us.gcr.io/${GCP_PROJECT}/<< parameters.package_name >>:<< parameters.package_version >> .
-#            echo ${GOOGLE_AUTH} > ${HOME}/gcp-key.json
-#            gcloud auth activate-service-account --key-file ${HOME}/gcp-key.json
-#            gcloud --quiet config set project ${GCP_PROJECT}
-#            gcloud docker -- push us.gcr.io/${GCP_PROJECT}/<< parameters.package_name >>:<< parameters.package_version >>
-#      - run:
-#          name: Remove account details
-#          command: rm ${HOME}/gcp-key.json ; ls
+            docker build --rm=false -t us.gcr.io/${GCP_PROJECT}/<< parameters.package_name >>:<< parameters.package_version >> .
+            echo ${GOOGLE_AUTH} > ${HOME}/gcp-key.json
+            gcloud auth activate-service-account --key-file ${HOME}/gcp-key.json
+            gcloud --quiet config set project ${GCP_PROJECT}
+            gcloud docker -- push us.gcr.io/${GCP_PROJECT}/<< parameters.package_name >>:<< parameters.package_version >>
+      - run:
+          name: Remove account details
+          command: rm ${HOME}/gcp-key.json ; ls
 
 workflows:
   version: 2
@@ -124,10 +125,10 @@ workflows:
           package_version: 1.0.0
           requires:
             - preprocess-build
-          filters:
-            branches:
-              only:
-                - dev
+#          filters:
+#            branches:
+#              only:
+#                - dev
 
   api:
     when: << pipeline.parameters.api >>
