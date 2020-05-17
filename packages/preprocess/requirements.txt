@@ -1,5 +1,6 @@
 indicnlp==0.0.1
 indic-nlp-library==0.6
+google-cloud-storage==1.28.0
 pandas
 numpy
 coverage
